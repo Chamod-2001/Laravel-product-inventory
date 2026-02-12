@@ -71,11 +71,26 @@ This project was built as part of a Laravel practical assessment to demonstrate 
 
 ---
 
-## ⚙️ Installation Instructions
+## 🖼 Image Handling
 
-1. Clone the repository:
+- Only JPG and PNG images allowed
+- Images resized to maximum 300x300 pixels
+- Old image deleted when replacing during update
 
-```bash
-git clone https://github.com/YOUR-USERNAME/YOUR-REPO.git
+## 🧠 Performance Optimization
+- To prevent the N+1 query issue, eager loading is used:
+  ```bash
+  Product::with(['category', 'tags'])->latest()->get();
+    ```
+## Notes
+
+- Soft Deletes are enabled.
+- Deleted products can be restored from the Trash page.
+- Permanent deletion removes both database record and stored image.
+
+
+
+
+
 
 
