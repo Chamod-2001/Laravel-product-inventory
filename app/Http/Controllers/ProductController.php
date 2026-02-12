@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -19,7 +21,11 @@ class ProductController extends Controller
      */
     public function create()
     {
-        //
+        //loads categories and tags from database and sends them to the product create page, then user can choose them
+        $categories = Category::all();
+        $tags = Tag::all();
+
+        return view('products.create', compact('categories', 'tags'));
     }
 
     /**
