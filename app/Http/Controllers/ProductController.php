@@ -22,6 +22,7 @@ class ProductController extends Controller
 
         return view('products.index', compact('products')); //passed to the index view
     }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -33,6 +34,7 @@ class ProductController extends Controller
 
         return view('products.create', compact('categories', 'tags'));
     }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -86,6 +88,7 @@ class ProductController extends Controller
         return redirect()->route('products.index')
             ->with('success', 'Product created successfully.');
     }
+
     /**
      * Display the specified resource.
      */
@@ -106,6 +109,7 @@ class ProductController extends Controller
 
         return view('products.edit', compact('product', 'categories', 'tags')); //passed to edit.blade.php
     }
+
     /**
      * Update the specified resource in storage.
      */
@@ -144,6 +148,7 @@ class ProductController extends Controller
         return redirect()->route('products.index')
             ->with('success', 'Product updated successfully.');
     }
+
     /**
      * Remove the specified resource from storage.
      */
@@ -156,5 +161,31 @@ class ProductController extends Controller
 
         return redirect()->route('products.index')
             ->with('success', 'Product deleted successfully.');
+    }
+
+    /**
+     * SoftDelete product storage.
+     */
+    public function trash()
+    {
+        $products = Product::onlyTrashed()
+            ->with(['category', 'tags'])
+            ->latest()
+            ->get();
+
+        return view('products.trash', compact('products'));
+    }
+
+    /**
+     * SoftDelete product restore storage.
+     */
+    public function restore($id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+
+        $product->restore();
+
+        return redirect()->route('products.trash')
+            ->with('success', 'Product restored successfully.');
     }
 }

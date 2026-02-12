@@ -9,6 +9,8 @@
 
     <div class="d-flex justify-content-between mb-3">
         <h2>Products</h2>
+        <a href="{{ route('products.trash') }}" class="btn btn-danger">Trash</a>
+
         <a href="{{ route('products.create') }}" class="btn btn-primary">Add Product</a>
     </div>
 
