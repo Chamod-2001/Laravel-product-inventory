@@ -7,6 +7,7 @@ use App\Models\Tag; // Added
 use App\Models\Product; // Added
 
 use Illuminate\Support\Str; // Added
+use Illuminate\Support\Facades\Storage; // Added
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -42,6 +43,8 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        //dd('Store method reached'); // debug
+
         // Validation
         $validated = $request->validate([
 
@@ -55,6 +58,9 @@ class ProductController extends Controller
             'tags.*' => 'exists:tags,id'
 
         ]);
+
+        // logger($validated);
+
 
         // SKU auto generated unique 8 character string
         if (empty($validated['sku'])) {
@@ -75,6 +81,7 @@ class ProductController extends Controller
 
         // Create Product
         $product = Product::create($validated);
+        // dd($product);
 
         // Attach Tags (M:N)
         if ($request->has('tags')) {
@@ -101,6 +108,11 @@ class ProductController extends Controller
     public function edit(string $id)
     {
         //
+        $product = Product::with('tags')->findOrFail($id); // find related product using product_id | if not found 404 error | "with('tags')" eager load product tag for pre check
+        $categories = Category::all(); //load all category
+        $tags = Tag::all(); //load all tag
+
+        return view('products.edit', compact('product', 'categories', 'tags')); //passed to edit.blade.php
     }
 
     /**
@@ -109,6 +121,38 @@ class ProductController extends Controller
     public function update(Request $request, string $id)
     {
         //
+        $product = Product::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'sku' => 'nullable|string|unique:products,sku,' . $product->id,
+            'price' => 'required|numeric|min:0',
+            'stock_quantity' => 'required|integer|min:0',
+            'category_id' => 'required|exists:categories,id',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id'
+        ]);
+
+        // Replace Image if uploaded
+        if ($request->hasFile('image')) {
+
+            // Delete old image
+            if ($product->image_path && Storage::disk('public')->exists($product->image_path)) {
+                Storage::disk('public')->delete($product->image_path);
+            }
+
+            $path = $request->file('image')->store('products', 'public');
+            $validated['image_path'] = $path;
+        }
+
+        $product->update($validated);
+
+        // Sync tags (important!)
+        $product->tags()->sync($request->tags ?? []);
+
+        return redirect()->route('products.index')
+            ->with('success', 'Product updated successfully.');
     }
 
     /**
