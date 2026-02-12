@@ -27,13 +27,13 @@
         <!-- Price -->
         <div class="mb-3">
             <label class="form-label">Price *</label>
-            <input type="number" step="0.01" name="price" class="form-control" required>
+            <input type="number" step="0" min="0" name="price" class="form-control" required>
         </div>
 
         <!-- Stock -->
         <div class="mb-3">
             <label class="form-label">Stock Quantity *</label>
-            <input type="number" name="stock_quantity" class="form-control" required>
+            <input type="number" name="stock_quantity" min="0" class="form-control" required>
         </div>
 
         <!-- Category -->
