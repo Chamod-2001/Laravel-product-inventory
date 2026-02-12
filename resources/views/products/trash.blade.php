@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{{-- <!DOCTYPE html>
 <html>
 <head>
     <title>Trash Products</title>
@@ -57,4 +57,50 @@
 
 </div>
 </body>
-</html>
+</html> --}}
+
+
+@extends('layouts.admin')
+
+@section('content')
+
+<h2>Trash Products</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>SKU</th>
+            <th>Deleted At</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+
+    @forelse($products as $product)
+        <tr>
+            <td>{{ $product->name }}</td>
+            <td>{{ $product->sku }}</td>
+            <td>{{ $product->deleted_at }}</td>
+            <td>
+                <form action="{{ route('products.restore', $product->id) }}"
+                      method="POST">
+                    @csrf
+                    <button class="btn btn-success btn-sm">
+                        Restore
+                    </button>
+                </form>
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="4" class="text-center">
+                Trash is empty.
+            </td>
+        </tr>
+    @endforelse
+
+    </tbody>
+</table>
+
+@endsection
