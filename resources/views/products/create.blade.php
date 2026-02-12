@@ -7,8 +7,6 @@
 <body>
 <div class="container mt-5">
 
-    
-
 
     @if ($errors->any())
     <div class="alert alert-danger">

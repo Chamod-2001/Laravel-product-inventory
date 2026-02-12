@@ -17,15 +17,11 @@ class ProductController extends Controller
      */
     public function index()
     {
-
-
         // Eager loading(latest products with category and tags) to prevent N+1 problem (join), Retrieves all products with their related category and tags, Products are ordered by latest created
         $products = Product::with(['category', 'tags'])->latest()->get();
 
         return view('products.index', compact('products')); //passed to the index view
     }
-
-
     /**
      * Show the form for creating a new resource.
      */
@@ -37,7 +33,6 @@ class ProductController extends Controller
 
         return view('products.create', compact('categories', 'tags'));
     }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -71,7 +66,6 @@ class ProductController extends Controller
             $validated['sku'] = $sku; //Save the validated sku
         }
 
-
         // Store Image
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('products', 'public');
@@ -92,8 +86,6 @@ class ProductController extends Controller
         return redirect()->route('products.index')
             ->with('success', 'Product created successfully.');
     }
-
-
     /**
      * Display the specified resource.
      */
@@ -114,7 +106,6 @@ class ProductController extends Controller
 
         return view('products.edit', compact('product', 'categories', 'tags')); //passed to edit.blade.php
     }
-
     /**
      * Update the specified resource in storage.
      */
@@ -141,7 +132,6 @@ class ProductController extends Controller
             if ($product->image_path && Storage::disk('public')->exists($product->image_path)) {
                 Storage::disk('public')->delete($product->image_path);
             }
-
             $path = $request->file('image')->store('products', 'public');
             $validated['image_path'] = $path;
         }
@@ -154,12 +144,17 @@ class ProductController extends Controller
         return redirect()->route('products.index')
             ->with('success', 'Product updated successfully.');
     }
-
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
         //
+        $product = Product::findOrFail($id);
+
+        $product->delete(); // Soft delete
+
+        return redirect()->route('products.index')
+            ->with('success', 'Product deleted successfully.');
     }
 }
