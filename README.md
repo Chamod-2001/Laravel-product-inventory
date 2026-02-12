@@ -8,6 +8,14 @@ This project was built as part of a Laravel practical assessment to demonstrate 
 
 ---
 
+## 🎥 Demo Video
+
+You can watch the system demo here:
+
+👉 https://drive.google.com/drive/folders/1Mmyn66__W7pQnW4s7oIH9aliCGScKZme?usp=sharing
+
+---
+
 ## 🚀 Tech Stack
 
 - **Framework:** Laravel 11
