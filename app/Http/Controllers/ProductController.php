@@ -14,7 +14,15 @@ class ProductController extends Controller
     /**
      * Display a listing of the products
      */
-    public function index() {}
+    public function index()
+    {
+
+
+        // Eager loading(latest products with category and tags) to prevent N+1 problem (join), Retrieves all products with their related category and tags, Products are ordered by latest created
+        $products = Product::with(['category', 'tags'])->latest()->get();
+
+        return view('products.index', compact('products')); //passed to the index view
+    }
 
 
     /**
