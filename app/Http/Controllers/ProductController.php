@@ -6,6 +6,9 @@ use App\Models\Category; // Added
 use App\Models\Tag; // Added
 use App\Models\Product; // Added
 
+use Intervention\Image\ImageManager; // Added
+use Intervention\Image\Drivers\Gd\Driver; // Added
+
 use Illuminate\Support\Str; // Added
 use Illuminate\Support\Facades\Storage; // Added
 use Illuminate\Http\Request;
@@ -58,7 +61,6 @@ class ProductController extends Controller
 
         // logger($validated);
 
-
         // SKU auto generated unique 8 character string
         if (empty($validated['sku'])) {
             do { // why - loop keep looking generated code until find unique one (DB not store duplicate key)
@@ -68,12 +70,26 @@ class ProductController extends Controller
             $validated['sku'] = $sku; //Save the validated sku
         }
 
-        // Store Image
+        // Store & Resize Image
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('products', 'public');
 
-            $validated['image_path'] = $path; //Save the validated path
+            $image = $request->file('image');
+
+            $manager = new ImageManager(new Driver());
+
+            $resizedImage = $manager->read($image)
+                ->resize(300, 300, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+            $filename = uniqid() . '.' . $image->getClientOriginalExtension();
+
+            $resizedImage->save(storage_path('app/public/products/' . $filename));
+
+            $validated['image_path'] = 'products/' . $filename;
         }
+
 
         // Create Product
         $product = Product::create($validated);
@@ -130,15 +146,22 @@ class ProductController extends Controller
         ]);
 
         // Replace Image if uploaded
-        if ($request->hasFile('image')) {
+        $image = $request->file('image');
 
-            // Delete old image
-            if ($product->image_path && Storage::disk('public')->exists($product->image_path)) {
-                Storage::disk('public')->delete($product->image_path);
-            }
-            $path = $request->file('image')->store('products', 'public');
-            $validated['image_path'] = $path;
-        }
+        $manager = new ImageManager(new Driver());
+
+        $resizedImage = $manager->read($image)
+            ->resize(300, 300, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+
+        $filename = uniqid() . '.' . $image->getClientOriginalExtension();
+
+        $resizedImage->save(storage_path('app/public/products/' . $filename));
+
+        $validated['image_path'] = 'products/' . $filename;
+
 
         $product->update($validated);
 
@@ -187,5 +210,27 @@ class ProductController extends Controller
 
         return redirect()->route('products.trash')
             ->with('success', 'Product restored successfully.');
+    }
+
+    /**
+     * Permanent Delete product in storage.
+     */
+    public function forceDelete($id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+
+        // Delete image permanently
+        if (
+            $product->image_path &&
+            Storage::disk('public')->exists($product->image_path)
+        ) {
+
+            Storage::disk('public')->delete($product->image_path);
+        }
+
+        $product->forceDelete();
+
+        return redirect()->route('products.trash')
+            ->with('success', 'Product permanently deleted.');
     }
 }
